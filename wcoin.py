@@ -7,9 +7,6 @@ import time
 from urllib.parse import urlparse, parse_qs
 from user_agent import generate_user_agent
 
-# Initialize Colorama
-init(autoreset=True)
-
 user_agent = generate_user_agent('android')
 headers = {
     'accept': '*/*',
@@ -29,20 +26,22 @@ headers = {
     'x-requested-with': 'org.telegram.plus',
 }
 
-# Modified main_wcoin function to accept a query ID directly
-def main_wcoin(query_id, amount, key):
-    identifier = str(query_id)
-    json_data = {
-        'identifier': identifier,
-        'password': identifier,
-    }
-    # First API call for authentication
-    res = requests.post('https://starfish-app-fknmx.ondigitalocean.app/wapi/api/auth/local', json=json_data).json()
-    # Second API call
-    r = requests.post('http://77.37.63.209:5000/api', json={'initData': query_id, 'serverData': res, 'amount': amount, 'key': key})
-    return (r.json())
+init(autoreset=True)
 
-# Function to create a gradient banner
+def main_wcoin(session ,amount, key):
+    parsed_url = urlparse(session)
+    query_params = parse_qs(parsed_url.fragment)
+    tgWebAppData = query_params.get('tgWebAppData', [None])[0]
+    user_data = parse_qs(tgWebAppData)['user'][0]
+    user_data = json.loads(user_data)
+    identifier = str(user_data['id'])
+    json_data = {
+            'identifier':identifier,
+            'password': identifier,
+        }
+    res = requests.post('https://starfish-app-fknmx.ondigitalocean.app/wapi/api/auth/local', json=json_data).json()
+    r = requests.post('http://77.37.63.209:5000/api',json={'initData':session,'serverData':res,'amount':amount,'key':key})
+    return (r.json())
 def create_gradient_banner(text):
     banner = pyfiglet.figlet_format(text).splitlines()
     colors = [Fore.GREEN + Style.BRIGHT, Fore.YELLOW + Style.BRIGHT, Fore.RED + Style.BRIGHT]
@@ -56,46 +55,38 @@ def create_gradient_banner(text):
         else:
             print(colors[2] + line)  # Red
 
-# Function to print social media info in a box format
 def print_info_box(social_media_usernames):
     colors = [Fore.CYAN, Fore.MAGENTA, Fore.LIGHTYELLOW_EX, Fore.BLUE, Fore.LIGHTWHITE_EX]
+    
     box_width = max(len(social) + len(username) for social, username in social_media_usernames) + 4
     print(Fore.WHITE + Style.BRIGHT + '+' + '-' * (box_width - 2) + '+')
     
     for i, (social, username) in enumerate(social_media_usernames):
-        color = colors[i % len(colors)]
+        color = colors[i % len(colors)]  # Cycle through colors
         print(color + f'| {social}: {username} |')
     
     print(Fore.WHITE + Style.BRIGHT + '+' + '-' * (box_width - 2) + '+')
 
-# Main execution
 if __name__ == "__main__":
     banner_text = "WHYWETAP"
     os.system('cls' if os.name == 'nt' else 'clear')
     create_gradient_banner(banner_text)
-    
-    # Display social media usernames
     social_media_usernames = [
         ("CryptoNews", "@ethcryptopia"),
         ("Auto Farming", "@whywetap"),
         ("Auto Farming", "@autominerx"),
+        #("", "@"),
         ("Coder", "@demoncratos"),
     ]
     
     print_info_box(social_media_usernames)
-    
-    # Get user input for query ID instead of session
-    query_id = input("\nEnter Query ID: ")
-    balance_input = input("Enter Coin Amount: ")
+    user_input = input("\nEnter Wcoin Session : ")
+    balance_input = input("Enter Coin Amount : ")
     key = input("Enter Authorization Key  : ")
-    
-    # Call main_wcoin with query_id
-    data = main_wcoin(query_id, int(balance_input), key)
+    data = main_wcoin(user_input,int(balance_input),key)
     os.system('cls' if os.name == 'nt' else 'clear')
     create_gradient_banner('Done')
-    
-    # Display user data
-    try:
+    try :
         print(Fore.GREEN + Style.BRIGHT + "=== User Information ===")
         print(Fore.YELLOW + f"Username: {data['username']}")
         print(Fore.CYAN + f"Email: {data['email']}")
@@ -105,5 +96,6 @@ if __name__ == "__main__":
         print(Fore.WHITE + f"Max Energy: {data['max_energy']}")
         print(Fore.GREEN + Style.BRIGHT + f"Created At: {data['createdAt']}")
         print(Fore.GREEN + Style.BRIGHT + "========================")
+    
     except:
-        print(Fore.RED + Style.BRIGHT + data.get('error', 'An unexpected error occurred'))
+        print(Fore.RED + Style.BRIGHT + data['error'])
