@@ -3,7 +3,7 @@
 #### use Termux or Terminal  
 
  ``` 
- git clone https://github.com/elphador/wcoin.git
+ https://github.com/DeepTV12/wcoin.git
 ```
  ``` 
  cd wcoin
