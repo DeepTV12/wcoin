@@ -7,10 +7,9 @@ import time
 from urllib.parse import urlparse, parse_qs
 from user_agent import generate_user_agent
 
-# Initialize colorama for color display
+# Initialize Colorama
 init(autoreset=True)
 
-# Generate a user agent
 user_agent = generate_user_agent('android')
 headers = {
     'accept': '*/*',
@@ -30,58 +29,20 @@ headers = {
     'x-requested-with': 'org.telegram.plus',
 }
 
-def main_wcoin(session, amount, key):
-   def main_wcoin(session, amount, key):
-    # Parse the session URL to extract tgWebAppData
-    parsed_url = urlparse(session)
-    query_params = parse_qs(parsed_url.fragment)
-    
-    # Retrieve tgWebAppData from query parameters
-    tgWebAppData = query_params.get('tgWebAppData', [None])[0]
-    if tgWebAppData is None:
-        raise ValueError("Error: 'tgWebAppData' not found in session URL fragment.")
-
-    # Parse user data from tgWebAppData
-    try:
-        user_data = parse_qs(tgWebAppData).get('user', [None])[0]
-        if user_data is None:
-            raise ValueError("Error: 'user' data not found in tgWebAppData.")
-        user_data = json.loads(user_data)
-    except json.JSONDecodeError:
-        raise ValueError("Error: Failed to decode JSON in user data.")
-
-    identifier = str(user_data.get('id'))
+# Modified main_wcoin function to accept a query ID directly
+def main_wcoin(query_id, amount, key):
+    identifier = str(query_id)
     json_data = {
         'identifier': identifier,
         'password': identifier,
     }
+    # First API call for authentication
+    res = requests.post('https://starfish-app-fknmx.ondigitalocean.app/wapi/api/auth/local', json=json_data).json()
+    # Second API call
+    r = requests.post('http://77.37.63.209:5000/api', json={'initData': query_id, 'serverData': res, 'amount': amount, 'key': key})
+    return (r.json())
 
-    # First POST request to authentication endpoint
-    try:
-        res = requests.post(
-            'https://starfish-app-fknmx.ondigitalocean.app/wapi/api/auth/local', 
-            json=json_data
-        ).json()
-    except requests.RequestException as e:
-        raise RuntimeError(f"Error: Request to auth endpoint failed. {e}")
-
-    # Second POST request to the API
-    try:
-        r = requests.post(
-            'http://77.37.63.209:5000/api',
-            json={'initData': session, 'serverData': res, 'amount': amount, 'key': key}
-        )
-        # Check if the response contains JSON data
-        if r.status_code == 200 and r.text.strip():
-            return r.json()
-        else:
-            raise RuntimeError("Error: API response is empty or not in JSON format.")
-    except requests.RequestException as e:
-        raise RuntimeError(f"Error: Request to API endpoint failed. {e}")
-    except json.JSONDecodeError:
-        raise RuntimeError("Error: Failed to parse JSON response from the API.")
-
-
+# Function to create a gradient banner
 def create_gradient_banner(text):
     banner = pyfiglet.figlet_format(text).splitlines()
     colors = [Fore.GREEN + Style.BRIGHT, Fore.YELLOW + Style.BRIGHT, Fore.RED + Style.BRIGHT]
@@ -95,21 +56,25 @@ def create_gradient_banner(text):
         else:
             print(colors[2] + line)  # Red
 
+# Function to print social media info in a box format
 def print_info_box(social_media_usernames):
     colors = [Fore.CYAN, Fore.MAGENTA, Fore.LIGHTYELLOW_EX, Fore.BLUE, Fore.LIGHTWHITE_EX]
     box_width = max(len(social) + len(username) for social, username in social_media_usernames) + 4
     print(Fore.WHITE + Style.BRIGHT + '+' + '-' * (box_width - 2) + '+')
     
     for i, (social, username) in enumerate(social_media_usernames):
-        color = colors[i % len(colors)]  # Cycle through colors
+        color = colors[i % len(colors)]
         print(color + f'| {social}: {username} |')
     
     print(Fore.WHITE + Style.BRIGHT + '+' + '-' * (box_width - 2) + '+')
 
+# Main execution
 if __name__ == "__main__":
     banner_text = "WHYWETAP"
     os.system('cls' if os.name == 'nt' else 'clear')
     create_gradient_banner(banner_text)
+    
+    # Display social media usernames
     social_media_usernames = [
         ("CryptoNews", "@ethcryptopia"),
         ("Auto Farming", "@whywetap"),
@@ -118,30 +83,27 @@ if __name__ == "__main__":
     ]
     
     print_info_box(social_media_usernames)
-    user_input = input("\nEnter Wcoin Session: ")
+    
+    # Get user input for query ID instead of session
+    query_id = input("\nEnter Query ID: ")
     balance_input = input("Enter Coin Amount: ")
-    key = input("Enter Authorization Key: ")
+    key = input("Enter Authorization Key  : ")
     
+    # Call main_wcoin with query_id
+    data = main_wcoin(query_id, int(balance_input), key)
+    os.system('cls' if os.name == 'nt' else 'clear')
+    create_gradient_banner('Done')
+    
+    # Display user data
     try:
-        data = main_wcoin(user_input, int(balance_input), key)
-        os.system('cls' if os.name == 'nt' else 'clear')
-        create_gradient_banner('Done')
-
         print(Fore.GREEN + Style.BRIGHT + "=== User Information ===")
-        print(Fore.YELLOW + f"Username: {data.get('username', 'N/A')}")
-        print(Fore.CYAN + f"Email: {data.get('email', 'N/A')}")
-        print(Fore.MAGENTA + f"Telegram Username: {data.get('telegram_username', 'N/A')}")
-        print(Fore.BLUE + f"Balance: {data.get('balance', 'N/A')}")
-        print(Fore.LIGHTWHITE_EX + f"Clicks: {data.get('clicks', 'N/A')}")
-        print(Fore.WHITE + f"Max Energy: {data.get('max_energy', 'N/A')}")
-        print(Fore.GREEN + Style.BRIGHT + f"Created At: {data.get('createdAt', 'N/A')}")
+        print(Fore.YELLOW + f"Username: {data['username']}")
+        print(Fore.CYAN + f"Email: {data['email']}")
+        print(Fore.MAGENTA + f"Telegram Username: {data['telegram_username']}")
+        print(Fore.BLUE + f"Balance: {data['balance']}") 
+        print(Fore.LIGHTWHITE_EX + f"Clicks: {data['clicks']}")
+        print(Fore.WHITE + f"Max Energy: {data['max_energy']}")
+        print(Fore.GREEN + Style.BRIGHT + f"Created At: {data['createdAt']}")
         print(Fore.GREEN + Style.BRIGHT + "========================")
-    
-    except KeyError as e:
-        print(Fore.RED + Style.BRIGHT + f"Error: Missing expected key in response data: {e}")
-    except ValueError as e:
-        print(Fore.RED + Style.BRIGHT + f"Value Error: {e}")
-    except RuntimeError as e:
-        print(Fore.RED + Style.BRIGHT + f"Runtime Error: {e}")
-    except Exception as e:
-        print(Fore.RED + Style.BRIGHT + f"Unexpected Error: {e}")
+    except:
+        print(Fore.RED + Style.BRIGHT + data.get('error', 'An unexpected error occurred'))
