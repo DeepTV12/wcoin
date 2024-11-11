@@ -3,6 +3,7 @@ import pyfiglet
 from colorama import Fore, Style, init
 import json
 import requests
+import time 
 from urllib.parse import urlparse, parse_qs
 from user_agent import generate_user_agent
 
@@ -12,10 +13,10 @@ headers = {
     'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
     'cache-control': 'no-cache',
     'content-type': 'application/json',
-    'origin': 'https://app.w-coin.io',
+    'origin': 'https://alohomora-bucket-fra1-prod-frontend-static.fra1.cdn.digitaloceanspaces.com',
     'pragma': 'no-cache',
     'priority': 'u=1, i',
-    'referer': 'https://app.w-coin.io/',
+    'referer': 'https://alohomora-bucket-fra1-prod-frontend-static.fra1.cdn.digitaloceanspaces.com/',
     'sec-ch-ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Android WebView";v="128"',
     'sec-ch-ua-mobile': '?1',
     'sec-ch-ua-platform': '"Android"',
@@ -27,7 +28,7 @@ headers = {
 
 init(autoreset=True)
 
-def main_wcoin(session, amount):
+def main_wcoin(session ,amount, key):
     parsed_url = urlparse(session)
     query_params = parse_qs(parsed_url.fragment)
     tgWebAppData = query_params.get('tgWebAppData', [None])[0]
@@ -35,27 +36,14 @@ def main_wcoin(session, amount):
     user_data = json.loads(user_data)
     identifier = str(user_data['id'])
     json_data = {
-            'identifier': identifier,
+            'identifier':identifier,
             'password': identifier,
         }
-
-    try:
-        # Authenticate the user
-        res = requests.post('https://app.w-coin.io/wapi/api/auth/local', json=json_data).json()
-        
-        # Perform the main request to get the Wcoin data
-        # Removing 'key' parameter from the request
-        r = requests.post('http://213.218.240.167:5000/private', json={'initData': session, 'serverData': res, 'amount': amount})
-        
-        # Return the JSON response
-        return r.json()
-    except requests.exceptions.RequestException as e:
-        print(Fore.RED + Style.BRIGHT + "An error occurred while fetching data.")
-        print(e)
-        return {'error': 'Request error occurred'}
-
+    res = requests.post('https://starfish-app-fknmx.ondigitalocean.app/wapi/api/auth/local', json=json_data).json()
+    r = requests.post('http://77.37.63.209:5000/api',json={'initData':session,'serverData':res,'amount':amount,'key':key})
+    return (r.json())
 def create_gradient_banner(text):
-    banner = pyfiglet.figlet_format(text, font='slant').splitlines()
+    banner = pyfiglet.figlet_format(text).splitlines()
     colors = [Fore.GREEN + Style.BRIGHT, Fore.YELLOW + Style.BRIGHT, Fore.RED + Style.BRIGHT]
     total_lines = len(banner)
     section_size = total_lines // len(colors)
@@ -87,20 +75,18 @@ if __name__ == "__main__":
         ("CryptoNews", "@ethcryptopia"),
         ("Auto Farming", "@whywetap"),
         ("Auto Farming", "@autominerx"),
+        #("", "@"),
         ("Coder", "@demoncratos"),
     ]
     
     print_info_box(social_media_usernames)
     user_input = input("\nEnter Wcoin Session : ")
     balance_input = input("Enter Coin Amount : ")
-    
-    # The key input and passing have been removed
-    data = main_wcoin(user_input, int(balance_input))
-    
+    key = input("Enter Authorization Key  : ")
+    data = main_wcoin(user_input,int(balance_input),key)
     os.system('cls' if os.name == 'nt' else 'clear')
     create_gradient_banner('Done')
-    
-    try:
+    try :
         print(Fore.GREEN + Style.BRIGHT + "=== User Information ===")
         print(Fore.YELLOW + f"Username: {data['username']}")
         print(Fore.CYAN + f"Email: {data['email']}")
