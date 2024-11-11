@@ -31,6 +31,7 @@ headers = {
 }
 
 def main_wcoin(session, amount, key):
+   def main_wcoin(session, amount, key):
     # Parse the session URL to extract tgWebAppData
     parsed_url = urlparse(session)
     query_params = parse_qs(parsed_url.fragment)
@@ -55,7 +56,7 @@ def main_wcoin(session, amount, key):
         'password': identifier,
     }
 
-    # Make the first POST request to the authentication endpoint
+    # First POST request to authentication endpoint
     try:
         res = requests.post(
             'https://starfish-app-fknmx.ondigitalocean.app/wapi/api/auth/local', 
@@ -64,15 +65,22 @@ def main_wcoin(session, amount, key):
     except requests.RequestException as e:
         raise RuntimeError(f"Error: Request to auth endpoint failed. {e}")
 
-    # Make the second POST request to the API
+    # Second POST request to the API
     try:
         r = requests.post(
             'http://77.37.63.209:5000/api',
             json={'initData': session, 'serverData': res, 'amount': amount, 'key': key}
         )
-        return r.json()
+        # Check if the response contains JSON data
+        if r.status_code == 200 and r.text.strip():
+            return r.json()
+        else:
+            raise RuntimeError("Error: API response is empty or not in JSON format.")
     except requests.RequestException as e:
         raise RuntimeError(f"Error: Request to API endpoint failed. {e}")
+    except json.JSONDecodeError:
+        raise RuntimeError("Error: Failed to parse JSON response from the API.")
+
 
 def create_gradient_banner(text):
     banner = pyfiglet.figlet_format(text).splitlines()
